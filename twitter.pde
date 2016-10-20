@@ -14,7 +14,7 @@ static String AccessTokenSecret = "WgEO5Hird475GZvbR4g5pMUJf5dVEpJaLGNSpstRMungT
 String inChar; //the string of characters read by the serial port
 ArrayList<String> tweets = new ArrayList<String>(); // where tweets are stored
 StringBuilder sb = new StringBuilder(); // the text of the tweets to strings 
-char[] ch = new char[141]; // stores tweets turned into characters
+ArrayList<Character> ch = new ArrayList<Character>(); //ARRAY LIST OF CHARS 
 int i=0;
 
 void setup() {
@@ -34,20 +34,12 @@ void serialEvent(Serial myPort) { // THIS IS A LOOP
        inChar = myPort.readStringUntil('\n'); // reads "here" from the arduino
          if(inChar != null) {
            if(inChar.trim().equals("ready")) {
-             println("here");
-               myPort.write(ch[i]); // writes bytes to Serial port
-               
-               if (i < ch[i]-1) {
-                  // if not step on
-                  i++;
-                }
-                else {
-                  //if we are go back to the begining
-                  i=0;
-                }
+             for (int i = 0; i < ch.size(); i++) {
+                myPort.write(ch.get(i));
+             }
            }   
          }  
- }
+     }
 }
 
 //Initial connection
@@ -63,22 +55,27 @@ void connectTwitter() {
  
     try {
       Query query = new Query("pizza");
-      query.setCount(1); // sets the number of tweets to return per page, up to a max of 100
+      query.setCount(100); // sets the number of tweets to return per page, up to a max of 100
       QueryResult result = twitter.search(query); 
             for (Status t : result.getTweets()){
                    tweets.add(t.getText());
-                for (String s : tweets) // loops through tweet array to just get the text
+                for (String s : tweets) // PUTS TWEETS INTO STRING ARRAY LIST "tweets"
                 {   sb.append(s); // appends text of tweet to object 
                     sb.append("\n"); //appends new line to the end of the tweet
                     sb.toString(); // makes that tweet its own string 
-                    //println(sb);
-                }    
-         }
+                    for (int i = 0; i < sb.length(); i++) {
+                      char c = sb.charAt(i);
+                      ch.add(c);
+                    }
+                }     
+            }
       } catch (TwitterException te){
          System.out.println("Error"); // if try doesn't work
-     }
-    
-     for (int i = 0; i < sb.length(); i++) { // loop through the array
-         ch[i] = sb.charAt(i); // puts each character into array
-     } 
+      }
+     
+     //theTweetBytes = new String(ch).getBytes();
+      for (int i = 0; i < ch.size(); i++) {
+         ch.get(i);
+      }
+      //println(ch);
 }
