@@ -20,7 +20,6 @@ int i=0;
 void setup() {
   size(800, 200); //make our canvas 200 x 200 pixels big
   myPort = new Serial(this, Serial.list()[2], 115200);
-  connectTwitter();
 }
 
 void draw() { 
@@ -31,14 +30,18 @@ void draw() {
 void serialEvent(Serial myPort) { // THIS IS A LOOP
      if(myPort.available() > 0){ 
        //grab line 
-       inChar = myPort.readStringUntil('\n'); // reads "here" from the arduino
+       inChar = myPort.readStringUntil('\n'); // reads "ready" from the arduino
          if(inChar != null) {
            if(inChar.trim().equals("ready")) {
-             for (int i = 0; i < ch.size(); i++) {
-                myPort.write(ch.get(i));
-             }
-           }   
-         }  
+             connectTwitter();
+             cleanHouse();
+             println("ready");
+           } else if(inChar.trim().equals("anotherOne")){
+             connectTwitter();
+             cleanHouse();
+             println("anotherone");
+           }  
+         } 
      }
 }
 
@@ -55,14 +58,14 @@ void connectTwitter() {
  
     try {
       Query query = new Query("pizza");
-      query.setCount(100); // sets the number of tweets to return per page, up to a max of 100
+      query.setCount(1); // sets the number of tweets to return per page, up to a max of 100
       QueryResult result = twitter.search(query); 
             for (Status t : result.getTweets()){
                    tweets.add(t.getText());
                 for (String s : tweets) // PUTS TWEETS INTO STRING ARRAY LIST "tweets"
                 {   sb.append(s); // appends text of tweet to object 
                     sb.append("\n"); //appends new line to the end of the tweet
-                    sb.toString(); // makes that tweet its own string 
+                    sb.toString(); // makes that tweet its own string
                     for (int i = 0; i < sb.length(); i++) {
                       char c = sb.charAt(i);
                       ch.add(c);
@@ -72,10 +75,18 @@ void connectTwitter() {
       } catch (TwitterException te){
          System.out.println("Error"); // if try doesn't work
       }
-     
-     //theTweetBytes = new String(ch).getBytes();
       for (int i = 0; i < ch.size(); i++) {
-         ch.get(i);
+         myPort.write(ch.get(i));
+         print(ch.get(i));
       }
-      //println(ch);
+      //println(ch.get(i));
+}
+
+void cleanHouse(){
+      if(ch.get(ch.size() - 1) == '\n'){
+        println("I cleared the tweets");
+             tweets.clear();
+             ch.clear();
+             myPort.clear();
+    } 
 }
